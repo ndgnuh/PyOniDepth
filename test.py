@@ -3,12 +3,11 @@ import os
 import cv2
 import matplotlib
 import numpy as np
-import onidepth
 from matplotlib.colors import LogNorm
-from retinaface_detector import FaceDetector
 from scipy.special import expit as sigmoid
 
-detector = FaceDetector()
+import onidepth
+
 # onidepth.hello()
 matplotlib.use("tkagg")
 from matplotlib import pyplot as plt
@@ -27,7 +26,7 @@ def animate(im, i):
     return im
 
 
-cmap = plt.get_cmap("rainbow")
+cmap = plt.get_cmap("jet")
 max_depth = 0
 min_depth = float("inf")
 ok = onidepth.initialize(
@@ -36,7 +35,7 @@ ok = onidepth.initialize(
     fps=30,
     pixel_format=onidepth.PIXEL_FORMAT_DEPTH_1_MM,
 )
-onidepth.set_min_depth(250)
+onidepth.set_min_depth(300)
 onidepth.set_max_depth(1000)
 
 if not ok:
@@ -86,42 +85,42 @@ def gen_mask(dmap):
 
 
 while True:
-    dframe = onidepth.get_frame()
+    dframe = onidepth.get_frame(True)
     ok, cframe = cap.read()
     if not ok:
         continue
 
     # Detect faces
-    boxes, scores, landmarks = detector(cframe)
-    print(boxes)
-    H, W, _ = cframe.shape
-    if len(boxes) > 0 and False:
-        x1, y1, x2, y2 = boxes[0]
-        x1 = int(x1 * W)
-        y1 = int(y1 * H)
-        x2 = int(x2 * W)
-        y2 = int(y2 * H)
-        cv2.rectangle(cframe, (x1, y1), (x2, y2), (0, 255, 0))
+    # boxes, scores, landmarks = detector(cframe)
+    # print(boxes)
+    # H, W, _ = cframe.shape
+    # if len(boxes) > 0 and False:
+    #     x1, y1, x2, y2 = boxes[0]
+    #     x1 = int(x1 * W)
+    #     y1 = int(y1 * H)
+    #     x2 = int(x2 * W)
+    #     y2 = int(y2 * H)
+    #     cv2.rectangle(cframe, (x1, y1), (x2, y2), (0, 255, 0))
 
-        H, W = dframe.shape
-        x1, y1, x2, y2 = boxes[0]
-        x1 = int(x1 * W)
-        y1 = int(y1 * H)
-        x2 = int(x2 * W)
-        y2 = int(y2 * H)
-        mask = np.zeros_like(dframe, dtype=bool)
-        mask[y1:y2, x1:x2] = True
+    #     H, W = dframe.shape
+    #     x1, y1, x2, y2 = boxes[0]
+    #     x1 = int(x1 * W)
+    #     y1 = int(y1 * H)
+    #     x2 = int(x2 * W)
+    #     y2 = int(y2 * H)
+    #     mask = np.zeros_like(dframe, dtype=bool)
+    #     mask[y1:y2, x1:x2] = True
 
-        dframe = dframe.astype("float32")
-        try:
-            dmax = dframe[mask].max()
-            dmin = dframe[mask].min()
-            dframe = (dframe - dmin) / (dmax - dmin)
-        except ValueError:
-            pass
-        dframe = np.where(mask, dframe, np.zeros_like(dframe))
+    #     dframe = dframe.astype("float32")
+    #     try:
+    #         dmax = dframe[mask].max()
+    #         dmin = dframe[mask].min()
+    #         dframe = (dframe - dmin) / (dmax - dmin)
+    #     except ValueError:
+    #         pass
+    #     dframe = np.where(mask, dframe, np.zeros_like(dframe))
 
-    dframe = gen_colormap(dframe)
+    # dframe = gen_colormap(dframe)
 
     # gen_hist(dframe)
     # break

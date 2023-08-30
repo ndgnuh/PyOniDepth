@@ -119,6 +119,11 @@ PyObject *onidepth_destroy(PyObject *self, PyObject *args) {
 
 PyObject *onidepth_getframe(PyObject *self, PyObject *args) {
   int width, height;
+  bool raw = false;
+
+  if (!PyArg_ParseTuple(args, "|p", &raw)) {
+    Py_RETURN_NONE;
+  }
 
   depth.readFrame(&frame);
   if (!frame.isValid()) {
@@ -148,8 +153,13 @@ PyObject *onidepth_getframe(PyObject *self, PyObject *args) {
   }
 
   // convert to numpy array
-  PyObject *pyframe =
-      PyArray_SimpleNewFromData(2, dims, NPY_FLOAT32, (void *)normDepthData);
+  PyObject *pyframe;
+  if (raw) {
+    pyframe = PyArray_SimpleNewFromData(2, dims, NPY_UINT16, (void *)depthData);
+  } else {
+    pyframe =
+        PyArray_SimpleNewFromData(2, dims, NPY_FLOAT32, (void *)normDepthData);
+  }
 
   return pyframe;
 }
